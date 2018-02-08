@@ -2,15 +2,25 @@ import tensorflow as tf
 import numpy
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 rng = np.random
 
-batch_size = 500
-learning_rate = [0.005, 0.001, 0.0001]
+batch_sizes = [500, 1750, 3500]
+lr = 0.005
 lam = 0
 num_iter = 20000
 num_runs_per_epoch = 7
 
+# 500 iterations
+# 500 ~ 7.6 and 8s
+# 1750 ~ 7.1 and 34s
+# 3500 ~ 6.2 and 75s
+
+# 20000 iterations
+# 500 ~ 0.369 and 379s
+# 1750 ~ 0.364 and 1416s
+# 3500 ~ 0.29 and 3337s
 
 
 
@@ -32,10 +42,10 @@ with np.load("notMNIST.npz") as data :
     testData, testTarget = Data[3600:], Target[3600:]
     print(trainData.shape, trainData.size)
     print(trainTarget.shape)
-    for lr, colour in zip(learning_rate, ['bo', 'ro', 'go']):
+    for batch_size, colour in zip(batch_sizes, ['bo', 'ro', 'go']):
+        start = time.time()
         epoch_array = []
         loss_array = []
-        print("Learning Rate : " + str(lr))
         W = tf.Variable(tf.random_normal([1, trainData.shape[1] * trainData.shape[2]]), name="weight")
         b = tf.Variable(tf.random_normal([1]), name="bias")
         X = tf.placeholder("float")
@@ -58,12 +68,15 @@ with np.load("notMNIST.npz") as data :
                 for miniBatchData, miniBatchTarget in zip(trainDataReshaped, trainTargetReshaped):
                     if(new_epoch):
                         new_epoch = False
-                        print("\n\nEpoch : " + str(epoch) +  "\n Loss : " + str(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget})) + "\n Total Loss : " + str(sess.run(total_loss, feed_dict={X: miniBatchData, y: miniBatchTarget})))
+                        if(epoch % 100 == 0):
+                            print("\n\nEpoch : " + str(epoch) +  "\n Loss : " + str(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget})) + "\n Total Loss : " + str(sess.run(total_loss, feed_dict={X: miniBatchData, y: miniBatchTarget})))
                         #plt.plot(epoch, sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget}), colour, label="lr: " + str(lr))
-                        epoch_array.append(epoch)
-                        loss_array.append(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget}))
+                        #epoch_array.append(epoch)
+                        #loss_array.append(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget}))
                     sess.run(optim, feed_dict={X: miniBatchData, y: miniBatchTarget})
-        plt.plot(epoch_array, loss_array, colour, label = "lr: " + str(lr))
+        #plt.plot(epoch_array, loss_array, colour, label = "batch_size: " + str(batch_size))
+        end = time.time()
+        print("Time for batch_size : " + str(batch_size) + " is: " + str(end-start))
     plt.legend()
     plt.show()
                 
