@@ -63,8 +63,7 @@ with np.load("notMNIST.npz") as data :
 
         with tf.Session() as sess:
             sess.run(init)
-            #for epoch in range(int(num_iter / trainDataReshaped.shape[0])):
-            for epoch in range(30):
+            for epoch in range(int(num_iter / trainDataReshaped.shape[0])):
                 new_epoch = True
                 for miniBatchData, miniBatchTarget in zip(trainDataReshaped, trainTargetReshaped):
                     if(new_epoch):
