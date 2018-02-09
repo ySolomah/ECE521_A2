@@ -71,4 +71,3 @@ with np.load("notMNIST.npz") as data :
                             print("\n\nEpoch : " + str(epoch) +  "\n Loss : " + str(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget})) + "\n Total Loss : " + str(sess.run(total_loss, feed_dict={X: miniBatchData, y: miniBatchTarget})))
                     sess.run(optim, feed_dict={X: miniBatchData, y: miniBatchTarget})
         end = time.time()
-        print("Time for batch_size : " + str(batch_size) + " is: " + str(end-start))        

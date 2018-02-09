@@ -5,6 +5,10 @@ import numpy as np
 import time
 import sys
 
+# accuracy validation: 0.97
+# accuracy test: 0.958620689655
+# accuracy train: 0.993428571429
+# accuracy mse: 0.00938463234807
 
 
 with np.load("notMNIST.npz") as data :
