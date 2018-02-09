@@ -6,20 +6,15 @@ import time
 
 rng = np.random
 
-batch_sizes = [500, 1750, 3500]
+batch_size = 500
 lr = 0.005
-lam = 0
+lambdas = [0, 0.001, 0.1, 1]
 num_iter = 20000
 
-# 500 iterations
-# 500 ~ 7.6 and 8s
-# 1750 ~ 7.1 and 34s
-# 3500 ~ 6.2 and 75s
-
-# 20000 iterations
-# 500 ~ 0.369 and 379s
-# 1750 ~ 0.364 and 1416s
-# 3500 ~ 0.29 and 3337s
+# Test accuracy: 0.35 with lambda: 0
+# Test accuracy: 0.48 with lambda: 0.001
+# Test accuracy: 0.662 with lambda: 0.1
+# Test accuracy: 0.655 with lambda: 1
 
 
 
@@ -41,7 +36,8 @@ with np.load("notMNIST.npz") as data :
     testData, testTarget = Data[3600:], Target[3600:]
     print(trainData.shape, trainData.size)
     print(trainTarget.shape)
-    for batch_size, colour in zip(batch_sizes, ['bo', 'ro', 'go']):
+    plt.figure().suptitle("validation accuracy with regularization")
+    for lam, colour in zip(lambdas, ['bo', 'ro', 'go', 'yo']):
         start = time.time()
         epoch_array = []
         loss_array = []
@@ -49,17 +45,21 @@ with np.load("notMNIST.npz") as data :
         b = tf.Variable(tf.random_normal([1]), name="bias")
         X = tf.placeholder("float")
         y = tf.placeholder("float")
+        score = tf.add(tf.reduce_sum(tf.multiply(W, X), 1), b)
         loss = (1 / (2 * batch_size)) * tf.reduce_sum(tf.square(tf.add(tf.reduce_sum(tf.multiply(W, X), 1), b) - y))
         regularize = tf.reduce_sum(tf.square(tf.transpose(W))) * lam / 2
         total_loss = loss + regularize
         if(lam == 0):
             total_loss = loss
         optim = tf.train.GradientDescentOptimizer(lr).minimize(total_loss)
-
         init = tf.global_variables_initializer()
 
         trainDataReshaped = trainData.reshape([-1, batch_size, trainData.shape[1] * trainData.shape[2]])
         trainTargetReshaped = trainTarget.reshape([-1, batch_size])
+        validDataReshaped = validData.reshape([100, validData.shape[1] * validData.shape[2]])
+        validTargetReshaped = validTarget.reshape([100])
+        testDataReshaped = testData.reshape([testTarget.shape[0], testData.shape[1] * testData.shape[2]])
+        testTargetReshaped = testTarget.reshape([testTarget.shape[0]])
         with tf.Session() as sess:
             sess.run(init)
             for epoch in range(int(num_iter / trainDataReshaped.shape[0])):
@@ -67,8 +67,29 @@ with np.load("notMNIST.npz") as data :
                 for miniBatchData, miniBatchTarget in zip(trainDataReshaped, trainTargetReshaped):
                     if(new_epoch):
                         new_epoch = False
-                        if(epoch % 100 == 0):
-                            print("\n\nEpoch : " + str(epoch) +  "\n Loss : " + str(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget})) + "\n Total Loss : " + str(sess.run(total_loss, feed_dict={X: miniBatchData, y: miniBatchTarget})))
+                        if(epoch % 50 == 0):
+                            guesses = sess.run(score, feed_dict={X: validDataReshaped, y: validTargetReshaped})
+                            guesses = np.around(guesses)
+                            guesses = np.clip(guesses, 0, 1)
+                            accuracy = 1 - np.absolute(guesses - validTargetReshaped).sum() / 100
+                            if(epoch % 200 == 0):
+                                print("\n\nEpoch : " + str(epoch) +  "\n Loss : " + str(sess.run(loss, feed_dict={X: miniBatchData, y: miniBatchTarget})) + "\n Total Loss : " + str(sess.run(total_loss, feed_dict={X: miniBatchData, y: miniBatchTarget})))
+                                print(accuracy)
+                            epoch_array.append(epoch)
+                            loss_array.append(accuracy)
                     sess.run(optim, feed_dict={X: miniBatchData, y: miniBatchTarget})
+            guesses = sess.run(score, feed_dict={X: testDataReshaped, y: testTargetReshaped})
+            guesses = np.around(guesses)
+            guesses = np.clip(guesses, 0, 1)
+            accuracy = 1 - np.absolute(guesses - testTargetReshaped).sum() / 145
+            print("Test accuracy: " + str(accuracy) + " with lambda: " + str(lam))
+        plt.plot(epoch_array, loss_array, colour, label="lambda: " + str(lam))
         end = time.time()
-        print("Time for batch_size : " + str(batch_size) + " is: " + str(end-start))        
+        print("Time for lambda : " + str(lam) + " is : " + str(end-start))
+    plt.xlabel("epoch")
+    plt.ylabel("accuracy %")
+    plt.legend()
+    plt.show()
+                
+
+        
