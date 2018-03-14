@@ -37,11 +37,13 @@ X = tf.placeholder(tf.float32, [None, trainData.shape[1] * trainData.shape[2] + 
 y = tf.placeholder(tf.float32, [None, 1], name='target_y')
 
 # 1 x 785
+W = tf.Variable(tf.truncated_normal([1, trainData.shape[1] * trainData.shape[2] + 1], stddev=1.0, name='weights'))
+
 # Normal equation (X^T*X)^-1*X^T*y
-W = tf.matmul(tf.matmul(tf.matrix_inverse(tf.matmul(tf.transpose(X), X)), tf.transpose(X)), y)
+normal = tf.matmul(tf.matmul(tf.matrix_inverse(tf.matmul(tf.transpose(X), X)), tf.transpose(X)), y)
 
 # Graph definition
-predY = tf.matmul(X, W)
+predY = tf.matmul(X, tf.transpose(W))
 
 # Error definition
 MSE = tf.reduce_mean(tf.reduce_sum((predY - y)**2, 1))
@@ -53,24 +55,27 @@ ACC = 1-tf.count_nonzero(tf.cast(tf.greater(predY, 0.5), tf.float32) - y)/tf.sha
 init = tf.global_variables_initializer()
 sess.run(init)
 
-start = time.time()
-sess.run(W, feed_dict={X: trainDataReshaped, y: trainTarget})
-end = time.time()
+initialW = sess.run(W)  
 
-error = sess.run(MSE, feed_dict={X: trainDataReshaped, y: trainTarget})
-accuracy = sess.run(ACC, feed_dict={X: validDataReshaped, y: validTarget}) # 1.3
+start = time.time()
+What = sess.run(tf.transpose(normal), feed_dict={X: trainDataReshaped, y: trainTarget})
+end = time.time()
 print("took " + str(end - start))
-print("final training MSE" + str(error))
+
+error = sess.run(MSE, feed_dict={X: trainDataReshaped, y: trainTarget, W: What})
+print("final training MSE " + str(error))
+
+accuracy = sess.run(ACC, feed_dict={X: validDataReshaped, y: validTarget, W: What})
 print("validation set accuracy " + str(accuracy))
-accuracy = sess.run(ACC, feed_dict={X: testDataReshaped, y: testTarget})
+accuracy = sess.run(ACC, feed_dict={X: testDataReshaped, y: testTarget, W: What})
 print("test set accuracy " + str(accuracy))
-accuracy = sess.run(ACC, feed_dict={X: trainDataReshaped, y: trainTarget})
+accuracy = sess.run(ACC, feed_dict={X: trainDataReshaped, y: trainTarget, W: What})
 print("training set accuracy " + str(accuracy))
 
 """
-took 0.15718817710876465
-final training MSE0.018783608
-validation set accuracy 0.48
-test set accuracy 0.496551724137931
+took 0.1584920883178711
+final training MSE 0.018783608
+validation set accuracy 0.97
+test set accuracy 0.9586206896551724
 training set accuracy 0.9934285714285714
 """
