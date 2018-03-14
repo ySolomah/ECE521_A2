@@ -42,10 +42,10 @@ predY = tf.matmul(X, tf.transpose(W)) + b
 
 # Error definition
 MSE = tf.reduce_mean(tf.reduce_sum((predY - y)**2, 1))
-# Classification threshold is 0. Cast bool Tensor output by tf.greater to get a
+# Classification threshold is 0.5. Cast bool Tensor output by tf.greater to get a
 # tensor of 1.'s and 0.'s, i.e. the classifications yhat, then subtract y and
 # count nonzeros to get # of failures.
-ACC = 1-tf.count_nonzero(tf.cast(tf.greater(predY, 0.0), tf.float32) - y)/tf.shape(y, out_type=tf.int64)[0]
+ACC = 1-tf.count_nonzero(tf.cast(tf.greater(predY, 0.5), tf.float32) - y)/tf.shape(y, out_type=tf.int64)[0]
 
 learningRates = [0.005, 0.001, 0.0001] # 1.1
 if len(sys.argv) == 2 and (sys.argv[1] == "2" or sys.argv[1] == "3"):
@@ -117,16 +117,20 @@ learning rate 0.005 batch size 3500 lambda 0 converged to loss 0.0819071 after 3
 """
 """
 1.3
-learning rate 0.005 batch size 500 lambda 0 converged to loss 0.25818023 after 155.5381374359131
-validation set accuracy 0.73
-test set accuracy 0.6758620689655173
-learning rate 0.005 batch size 500 lambda 0.001 converged to loss 0.31665757 after 208.1609537601471
-validation set accuracy 0.7
-test set accuracy 0.6896551724137931
-learning rate 0.005 batch size 500 lambda 0.1 converged to loss 5.9767976 after 206.3343210220337
-validation set accuracy 0.72
-test set accuracy 0.6965517241379311
-learning rate 0.005 batch size 500 lambda 1 converged to loss 44.90795 after 200.72062134742737
-validation set accuracy 0.7
-test set accuracy 0.6896551724137931
+learning rate 0.005 batch size 500 lambda 0 converged to loss 0.26546586 after 209.3253424167633
+validation set accuracy 0.86
+test set accuracy 0.806896551724138
+training set accuracy 0.846
+learning rate 0.005 batch size 500 lambda 0.001 converged to loss 0.18263519 after 205.7136116027832
+validation set accuracy 0.9299999999999999
+test set accuracy 0.8689655172413793
+training set accuracy 0.9188571428571428
+learning rate 0.005 batch size 500 lambda 0.1 converged to loss 4.4184537 after 206.76141834259033
+validation set accuracy 0.94
+test set accuracy 0.896551724137931
+training set accuracy 0.9451428571428572
+learning rate 0.005 batch size 500 lambda 1 converged to loss 34.576294 after 206.3271198272705
+validation set accuracy 0.94
+test set accuracy 0.903448275862069
+training set accuracy 0.9562857142857143
 """
