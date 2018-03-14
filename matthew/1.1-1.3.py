@@ -80,13 +80,13 @@ for learningRate, colour in zip(learningRates, ['b.', 'r.', 'g.']):
                 minibatch = random.sample(list(zip(trainDataReshaped, trainTarget)), B)
                 minibatchData, minibatchTarget = zip(*minibatch)
                 _ = sess.run(train, feed_dict={X: minibatchData, y: minibatchTarget})
-                error = sess.run(MSE, feed_dict={X: trainDataReshaped, y: trainTarget})
-                if WD != 0:
-                    error += sess.run(WD, feed_dict={X: trainDataReshaped, y: trainTarget})
                 epochCounter += B
                 if epochCounter >= trainData.shape[0]:
                     epochCounter -= trainData.shape[0]
                     epoch.append(B*iteration/trainData.shape[0])
+                    error = sess.run(MSE, feed_dict={X: trainDataReshaped, y: trainTarget})
+                    if WD != 0:
+                        error += sess.run(WD, feed_dict={X: trainDataReshaped, y: trainTarget})
                     loss.append(error)
             end = time.time()
             print("learning rate " + str(learningRate) + " batch size " + str(B) + " lambda " + str(lam) + " converged to loss " + str(loss[-1]) + " after " + str(end-start))

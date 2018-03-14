@@ -74,14 +74,12 @@ for learningRate, colour in zip(learningRates, ['b.']): #, 'r.', 'g.']):
                 minibatch = random.sample(list(zip(trainDataReshaped, trainTarget)), B)
                 minibatchData, minibatchTarget = zip(*minibatch)
                 _ = sess.run(train, feed_dict={X: minibatchData, y: minibatchTarget})
-                error = sess.run(CE, feed_dict={X: trainDataReshaped, y: trainTarget})
-                error += sess.run(WD, feed_dict={X: trainDataReshaped, y: trainTarget})
-                trainAccuracy = sess.run(ACC, feed_dict={X: trainDataReshaped, y: trainTarget})
-                validAccuracy = sess.run(ACC, feed_dict={X: validDataReshaped, y: validTarget})
                 epochCounter += B
                 if epochCounter >= trainData.shape[0]:
                     epochCounter -= trainData.shape[0]
                     epoch.append(B*iteration/trainData.shape[0])
+                    error = sess.run(CE, feed_dict={X: trainDataReshaped, y: trainTarget})
+                    error += sess.run(WD, feed_dict={X: trainDataReshaped, y: trainTarget})
                     trainLoss.append(error)
                     validError = sess.run(CE, feed_dict={X: validDataReshaped, y: validTarget})
                     validError += sess.run(WD, feed_dict={X: validDataReshaped, y: validTarget})
