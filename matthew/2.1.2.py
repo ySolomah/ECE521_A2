@@ -65,7 +65,7 @@ for optimizer, label, colour in zip(optimizers, labels, ['b.', 'r.']):
     epoch = []
     trainLoss = []
     WD = lam/2*(tf.norm(W)**2)
-    for iteration in range(1, 20001):
+    for iteration in range(1, 5001):
         # Shuffle data
         minibatch = random.sample(list(zip(trainDataReshaped, trainTarget)), B)
         minibatchData, minibatchTarget = zip(*minibatch)
@@ -81,30 +81,3 @@ for optimizer, label, colour in zip(optimizers, labels, ['b.', 'r.']):
     plt.plot(epoch, trainLoss, colour, mew=0.0, label=label)
 plt.legend()
 plt.show()
-
-"""
-learning rate 0.005 batch size 500 lambda 0.01 converged to loss 3.1157613 after 58.167991638183594
-validation set accuracy 0.96
-test set accuracy 0.9586206896551724
-training set accuracy 0.9577142857142857
-learning rate 0.001 batch size 500 lambda 0.01 converged to loss 3.430304 after 56.885133028030396
-validation set accuracy 0.9
-test set accuracy 0.9172413793103449
-training set accuracy 0.9165714285714286
-learning rate 0.0001 batch size 500 lambda 0.01 converged to loss 4.6389065 after 57.90668272972107
-validation set accuracy 0.6699999999999999
-test set accuracy 0.6413793103448275
-training set accuracy 0.6374285714285715
-"""
-"""
-learning rate 0.005 batch size 500 lambda 0.01 converged to loss 3.2479236 after 99.36951732635498
-validation set accuracy 0.98
-test set accuracy 0.9586206896551724
-training set accuracy 0.9622857142857143
-"""
-"""
-learning rate 0.005 batch size 500 lambda 0.01 converged to loss 3.0973194 after 26.286988019943237
-validation set accuracy 0.99
-test set accuracy 0.9724137931034482
-training set accuracy 0.96
-"""
