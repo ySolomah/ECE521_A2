@@ -45,17 +45,8 @@ print(tf.one_hot(trainTarget[:5], 10).eval())
 trainTargetOneHot = tf.one_hot(trainTarget, 10).eval()
 testTargetOneHot = tf.one_hot(testTarget, 10).eval()
 validTargetOneHot = tf.one_hot(validTarget, 10).eval()
-learningRates = [0.002]
+learningRates = [0.005, 0.001, 0.0001] # best is 0.001
 for learningRate in learningRates:
-    # Training mechanism
-    optimizer = tf.train.AdamOptimizer(learning_rate=learningRate)
-    train = optimizer.minimize(loss=CE)
-
-    init = tf.global_variables_initializer()
-    sess.run(init)
-    initialW = sess.run(W)  
-    initialb = sess.run(b)
-
     B = 500
     lam = 0.01
     start = time.time()
@@ -66,6 +57,13 @@ for learningRate in learningRates:
     trainAccuracies = []
     validAccuracies = []
     WD = lam/2*(tf.norm(W)**2)
+
+    # Training mechanism
+    optimizer = tf.train.AdamOptimizer(learning_rate=learningRate)
+    train = optimizer.minimize(loss=tf.add(CE, WD))
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
     for iteration in range(1, 5001):
         # Shuffle data
         minibatch = random.sample(list(zip(trainDataReshaped, trainTargetOneHot)), B)
@@ -96,40 +94,37 @@ for learningRate in learningRates:
     print("training set accuracy " + str(accuracy) + " correct " + str(correct))
 
     fig, ax1 = plt.subplots()
-    ax1.plot(epoch, trainLoss, 'b.', mew=0.0, label='training loss')
-    ax1.plot(epoch, validLoss, 'm.', mew=0.0, label='validation loss')
-    ax1.legend(loc="best")
-    ax1.tick_params('y', colors='b')
-    ax1.set_xlabel("epoch")
-    ax2 = ax1.twinx() 
-    ax2.plot(epoch, trainAccuracies, 'g.', mew=0.0, label='training accuracy')
-    ax2.plot(epoch, validAccuracies, 'r.', mew=0.0, label='validation accuracy')
-    ax2.legend(loc="best")
-    ax2.tick_params('y', colors='r')
-    vals = ax2.get_yticks()
-    ax2.set_yticklabels(['{:d}%'.format(int(x*100)) for x in vals])
-    ax2.set_ylabel("accuracy")
-    fig.tight_layout()
+    ax1.plot(epoch, trainAccuracies, 'b.', mew=0.0, label='training accuracy')
+    ax1.set_ylabel("Accuracy %", color='b')
+    ax1.set_xlabel('Epoch')
+    vals = ax1.get_yticks()
+    ax1.set_yticklabels(['{:d}%'.format(int(x*100)) for x in vals])
+    ax2 = ax1.twinx()
+    ax2.plot(epoch, trainLoss, 'r.', mew=0.0, label='training loss')
+    ax2.set_ylabel("Loss", color='r')
+    plt.show()
+    fig, ax1 = plt.subplots()
+    ax1.plot(epoch, validAccuracies, 'b.', mew=0.0, label='validation accuracy')
+    ax1.set_ylabel("Accuracy %", color='b')
+    ax1.set_xlabel('Epoch')
+    vals = ax1.get_yticks()
+    ax1.set_yticklabels(['{:d}%'.format(int(x*100)) for x in vals])
+    ax2 = ax1.twinx()
+    ax2.plot(epoch, validLoss, 'r.', mew=0.0, label='validation loss')
+    ax2.set_ylabel("Loss", color='r')
     plt.show()
 
 """
-learning rate 0.005 batch size 500 converged to loss 21.130325 after 64.43282628059387
-validation set accuracy 0.877 correct 877
-test set accuracy 0.8638032305433186 correct 2353
-training set accuracy 0.9368 correct 14052
-learning rate 0.001 batch size 500 converged to loss 23.909683 after 67.57670474052429
-validation set accuracy 0.866 correct 866
-test set accuracy 0.8582966226138032 correct 2338
-training set accuracy 0.8873333333333333 correct 13310
-learning rate 0.0001 batch size 500 converged to loss 31.071321 after 66.96525382995605
-validation set accuracy 0.778 correct 778
-test set accuracy 0.7749632892804699 correct 2111
-training set accuracy 0.7778666666666667 correct 11668
-
-### LEARNING RATE 0.002
-
-learning rate 0.002 batch size 500 converged to loss 21.987534 after 65.70072555541992
-validation set accuracy 0.87 correct 870
-test set accuracy 0.8524229074889867 correct 2322
-training set accuracy 0.9078 correct 13617
+learning rate 0.005 batch size 500 converged to loss 0.49875438 after 71.35069012641907
+validation set accuracy 0.895 correct 895
+test set accuracy 0.8942731277533039 correct 2436
+training set accuracy 0.8969333333333334 correct 13454
+learning rate 0.001 batch size 500 converged to loss 0.48137113 after 73.3856885433197
+validation set accuracy 0.899 correct 899
+test set accuracy 0.8909691629955947 correct 2427
+training set accuracy 0.9004666666666666 correct 13507
+learning rate 0.0001 batch size 500 converged to loss 19.264252 after 72.94785666465759
+validation set accuracy 0.713 correct 713
+test set accuracy 0.7430249632892805 correct 2024
+training set accuracy 0.737 correct 11055
 """

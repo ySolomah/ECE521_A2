@@ -59,8 +59,6 @@ for optimizer, errorFunc, lossLabel, accuracyLabel, lossColour, accuracyColour i
 
     init = tf.global_variables_initializer()
     sess.run(init)
-    initialW = sess.run(W)  
-    initialb = sess.run(b)
 
     B = 500
     # lam = 0.01

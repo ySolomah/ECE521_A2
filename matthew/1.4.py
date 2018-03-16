@@ -55,8 +55,6 @@ ACC = 1-tf.count_nonzero(tf.cast(tf.greater(predY, 0.5), tf.float32) - y)/tf.sha
 init = tf.global_variables_initializer()
 sess.run(init)
 
-initialW = sess.run(W)  
-
 start = time.time()
 What = sess.run(tf.transpose(normal), feed_dict={X: trainDataReshaped, y: trainTarget})
 end = time.time()

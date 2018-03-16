@@ -50,13 +50,6 @@ learningRate = 0.001
 optimizers = [tf.train.GradientDescentOptimizer(learning_rate=learningRate), tf.train.AdamOptimizer(learning_rate=learningRate)]
 labels = ['SGD', 'Adam']
 for optimizer, label, colour in zip(optimizers, labels, ['b.', 'r.']):
-    # Training mechanism
-    train = optimizer.minimize(loss=CE)
-
-    init = tf.global_variables_initializer()
-    sess.run(init)
-    initialW = sess.run(W)  
-    initialb = sess.run(b)
 
     B = 500
     lam = 0.01
@@ -65,6 +58,11 @@ for optimizer, label, colour in zip(optimizers, labels, ['b.', 'r.']):
     epoch = []
     trainLoss = []
     WD = lam/2*(tf.norm(W)**2)
+    # Training mechanism
+    train = optimizer.minimize(loss=tf.add(CE, WD))
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
     for iteration in range(1, 5001):
         # Shuffle data
         minibatch = random.sample(list(zip(trainDataReshaped, trainTarget)), B)

@@ -55,26 +55,28 @@ for learningRate, colour in zip(learningRates, ['b.', 'r.', 'g.']):
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=learningRate)
     train = optimizer.minimize(loss=MSE)
 
-    init = tf.global_variables_initializer()
-    sess.run(init)
-    initialW = sess.run(W)  
-    initialb = sess.run(b)
-
     Bs = [500] # 1.1, 1.3
     if len(sys.argv) == 2 and sys.argv[1] == "2":
         Bs = [500, 1500, 3500] # 1.2
     lams = [0] # 1.1, 1.2
     if len(sys.argv) == 2 and sys.argv[1] == "3":
-        lams = [0, 0.001, 0.1, 1] # 1.3
+        lams = [100, 0, 0.001, 0.1, 1] # 1.3
     for B in Bs:
         for lam in lams:
             start = time.time()
+            init = tf.global_variables_initializer()
+            sess.run(init)
             epochCounter = 0
             epoch = []
             loss = []
             WD = 0 # 1.1, 1.2
             if len(sys.argv) == 2 and sys.argv[1] == "3":
                 WD = lam/2*(tf.norm(W)**2) # 1.3
+                optimizer = tf.train.GradientDescentOptimizer(learning_rate=learningRate)
+                train = optimizer.minimize(loss=tf.add(MSE, WD))
+
+                init = tf.global_variables_initializer()
+                sess.run(init)
             for iteration in range(1, 20001):
                 # Shuffle data
                 minibatch = random.sample(list(zip(trainDataReshaped, trainTarget)), B)
@@ -117,20 +119,20 @@ learning rate 0.005 batch size 3500 lambda 0 converged to loss 0.0819071 after 3
 """
 """
 1.3
-learning rate 0.005 batch size 500 lambda 0 converged to loss 0.26546586 after 209.3253424167633
-validation set accuracy 0.86
+learning rate 0.005 batch size 500 lambda 0 converged to loss 0.27140966 after 87.59512114524841
+validation set accuracy 0.85
 test set accuracy 0.806896551724138
-training set accuracy 0.846
-learning rate 0.005 batch size 500 lambda 0.001 converged to loss 0.18263519 after 205.7136116027832
-validation set accuracy 0.9299999999999999
-test set accuracy 0.8689655172413793
-training set accuracy 0.9188571428571428
-learning rate 0.005 batch size 500 lambda 0.1 converged to loss 4.4184537 after 206.76141834259033
-validation set accuracy 0.94
-test set accuracy 0.896551724137931
-training set accuracy 0.9451428571428572
-learning rate 0.005 batch size 500 lambda 1 converged to loss 34.576294 after 206.3271198272705
-validation set accuracy 0.94
-test set accuracy 0.903448275862069
-training set accuracy 0.9562857142857143
+training set accuracy 0.8294285714285714
+learning rate 0.005 batch size 500 lambda 0.001 converged to loss 0.29603007 after 85.23812294006348
+validation set accuracy 0.83
+test set accuracy 0.8206896551724138
+training set accuracy 0.8674285714285714
+learning rate 0.005 batch size 500 lambda 0.1 converged to loss 0.030972648 after 86.16761040687561
+validation set accuracy 0.98
+test set accuracy 0.9724137931034482
+training set accuracy 0.9794285714285714
+learning rate 0.005 batch size 500 lambda 1 converged to loss 0.040988524 after 89.05650115013123
+validation set accuracy 0.97
+test set accuracy 0.9724137931034482
+training set accuracy 0.9745714285714285
 """
