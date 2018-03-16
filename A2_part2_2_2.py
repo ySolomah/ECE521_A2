@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 rng = np.random
 
@@ -10,10 +11,16 @@ learning_rate = [0.002]
 lambdas = [0.015]
 num_iter = 5000
 
+validTrain = 0
+
+
 colours = ['b',  'r', 'g', 'y']
 markers = ['o']
 
 plt.figure().suptitle("Facescrub classification")
+
+fig, ax1 = plt.subplots()
+
 
 data = np.load("data.npy")/255
 data = np.reshape(data, [-1, 32, 32])
@@ -38,10 +45,12 @@ trainTarget, validTarget, testTarget = target[rnd_idx[1:trBatch], 0], \
 print(trainData.shape)
 print(trainTarget.shape)
 
+trainTargetCopy = np.copy(trainTarget)
 trainTarget = np.expand_dims(trainTarget, axis=1)
 z = np.zeros((trainTarget.shape[0], 5))
 trainTarget = np.concatenate((trainTarget, z), axis=1)
 
+validTargetCopy = np.copy(validTarget)
 validTarget = np.expand_dims(validTarget, axis=1)
 z = np.zeros((validTarget.shape[0], 5))
 validTarget = np.concatenate((validTarget, z), axis=1)
@@ -68,6 +77,7 @@ for i, lams in enumerate(zip(lambdas, colours)):
         lr = lrs[0]
         epoch_array = []
         loss_array = []
+        cross_loss = []
         print("Learning Rate : " + str(lr))
         W = tf.Variable(tf.random_normal([1, 6, trainData.shape[1] * trainData.shape[2]]), name="weight")
         b = tf.Variable(tf.random_normal([1, 6]), name="bias")
@@ -91,16 +101,24 @@ for i, lams in enumerate(zip(lambdas, colours)):
 
         init = tf.global_variables_initializer()
 
+        trainDataReshapeMatt = trainData.reshape(-1, trainData.shape[1] * trainData.shape[2])
+
+        trainDataReshaped2 = trainData.reshape([trainData.shape[0], trainData.shape[1] * trainData.shape[2]])
+        trainTargetReshaped2 = trainTarget.reshape([trainTarget.shape[0], trainTarget.shape[1]])
         trainDataReshaped = trainData.reshape([-1, batch_size, trainData.shape[1] * trainData.shape[2]])
         trainTargetReshaped = trainTarget.reshape([-1, batch_size, trainTarget.shape[1]])
         testDataReshaped = testData.reshape([testData.shape[0], testData.shape[1] * testData.shape[2]])
         testTargetReshaped = testTarget.reshape([testTarget.shape[0], testTarget.shape[1]])
+        validDataReshaped = validData.reshape([validData.shape[0], validData.shape[1] * validData.shape[2]])
+        validTargetReshaped = validTarget.reshape([validTarget.shape[0], validTarget.shape[1]])
 
         with tf.Session() as sess:
             sess.run(init)
             for epoch in range(int(num_iter / trainDataReshaped.shape[0])):
                 new_epoch = True
                 for miniBatchData, miniBatchTarget in zip(trainDataReshaped, trainTargetReshaped):
+                    minibatch = random.sample(list(zip(trainDataReshapeMatt, trainTarget)), batch_size)
+                    miniBatchData, miniBatchTarget = zip(*minibatch)
                     if(new_epoch):
                         new_epoch = False
                         if(epoch % 100 == 0):
@@ -111,14 +129,33 @@ for i, lams in enumerate(zip(lambdas, colours)):
                         #loss_array.append(accuracy)
                         #guesses = sess.run(arg_max, feed_dict={X: testDataReshaped, y: testTargetReshaped})
                         #accuracy = 1 - (((np.absolute(guesses - testTargetCopy)).clip(0, 1).sum())/guesses.shape[0])
-                        guesses = sess.run(softmax_acc, feed_dict={X: testDataReshaped, y: testTargetReshaped})
-                        accuracy = 1 - (((np.absolute(guesses - testTargetCopy)).clip(0, 1).sum())/guesses.shape[0])
-                        loss_array.append(accuracy)
+                        #guesses = sess.run(softmax_acc, feed_dict={X: testDataReshaped, y: testTargetReshaped})
+                        #accuracy = 1 - (((np.absolute(guesses - testTargetCopy)).clip(0, 1).sum())/guesses.shape[0])
+                        #loss_array.append(accuracy)
+                        if(validTrain == 0):
+                        	guesses = sess.run(softmax_acc, feed_dict={X: trainDataReshaped2, y: trainTargetReshaped2})
+	                        accuracy = 1 - (((np.absolute(guesses - trainTargetCopy)).clip(0, 1).sum())/guesses.shape[0])
+	                       	entropy_loss = sess.run(temp5, feed_dict={X: trainDataReshaped2, y: trainTargetReshaped2})/guesses.shape[0]
+	                       	cross_loss.append(entropy_loss)
+	                        loss_array.append(accuracy*100)
+	                        print("accuracy: " + str(accuracy))
+                       	else:
+	                        guesses = sess.run(softmax_acc, feed_dict={X: validDataReshaped, y: validTargetReshaped})
+	                        accuracy = 1 - (((np.absolute(guesses - validTargetCopy)).clip(0, 1).sum())/guesses.shape[0])
+	                       	entropy_loss = sess.run(temp5, feed_dict={X: validDataReshaped, y: validTargetReshaped})/guesses.shape[0]
+	                       	cross_loss.append(entropy_loss)
+	                        loss_array.append(accuracy*100)
+	                       	print("accuracy: ", accuracy)
 
                     sess.run(optim, feed_dict={X: miniBatchData, y: miniBatchTarget})
-
-        plt.plot(epoch_array, loss_array, colour + marker, label = "lr: " + str(lr) + " with lam: " + str(lam))
-plt.xlabel("epoch")
+        ax1.plot(epoch_array, loss_array, 'b-')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel("Accuracy %", color='b')
+        ax2 = ax1.twinx()
+        ax1.plot(epoch_array, cross_loss, 'r.')
+        ax2.set_ylabel("Loss", color='r')
+        fig.tight_layout()
+        plt.show()
 plt.ylabel("accuracy %")
 plt.legend()
 plt.show()
