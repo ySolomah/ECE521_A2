@@ -45,7 +45,7 @@ print(tf.one_hot(trainTarget[:5], 10).eval())
 trainTargetOneHot = tf.one_hot(trainTarget, 10).eval()
 testTargetOneHot = tf.one_hot(testTarget, 10).eval()
 validTargetOneHot = tf.one_hot(validTarget, 10).eval()
-learningRates = [0.005, 0.001, 0.0001]
+learningRates = [0.002]
 for learningRate in learningRates:
     # Training mechanism
     optimizer = tf.train.AdamOptimizer(learning_rate=learningRate)
@@ -125,4 +125,11 @@ learning rate 0.0001 batch size 500 converged to loss 31.071321 after 66.9652538
 validation set accuracy 0.778 correct 778
 test set accuracy 0.7749632892804699 correct 2111
 training set accuracy 0.7778666666666667 correct 11668
+
+### LEARNING RATE 0.002
+
+learning rate 0.002 batch size 500 converged to loss 21.987534 after 65.70072555541992
+validation set accuracy 0.87 correct 870
+test set accuracy 0.8524229074889867 correct 2322
+training set accuracy 0.9078 correct 13617
 """
